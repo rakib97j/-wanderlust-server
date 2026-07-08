@@ -1,7 +1,7 @@
 const express = require('express');
 const dontenv = require('dotenv');
 const cors = require("cors")
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 dontenv.config()
 
 const uri = process.env.MONGODB_URI; ;
@@ -47,6 +47,11 @@ async function run() {
       const result = await destinationCollection.insertOne(destinationData);
 
       res.json(result);
+    })
+    app.get("/destination/:id", async (req ,res) => {
+      const {id} =req.params;
+      const result = await destinationCollection.findOne({_id : new ObjectId(id)});
+      res.json(result)
     })
  
 
