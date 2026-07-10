@@ -53,6 +53,19 @@ async function run() {
       const result = await destinationCollection.findOne({_id : new ObjectId(id)});
       res.json(result)
     })
+
+
+    app.patch("/destination/:id" , async (req ,res ) => {
+      const {id } =req.params
+      const updateData = req.body
+
+      const result = await destinationCollection.updateOne(
+        {_id : new ObjectId(id)},
+        {$set: updateData}
+      )
+      res.json(result)
+
+    });
  
 
 
