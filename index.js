@@ -1,19 +1,16 @@
-const express = require('express');
-const dontenv = require('dotenv');
-const cors = require("cors")
+const express = require("express");
+const dontenv = require("dotenv");
+const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-dontenv.config()
+dontenv.config();
 
-const uri = process.env.MONGODB_URI; ;
-  
-
+const uri = process.env.MONGODB_URI;
 
 const app = express();
 const PORT = process.env.PORT;
 
 app.use(cors());
-app.use(express.json())
-
+app.use(express.json());
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -25,21 +22,19 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
-    await client.db("admin").command({ ping: 1 });
-    console.log(" Connected ");
 
-
+     await client.connect();
 
     const db = client.db("wanderlust");
-    const destinationCollection =db.collection("destinations");
+    const destinationCollection = db.collection("destinations");
+    const bookingCollection = db.collection("bookings");
 
-    app.get("/destination" , async (req ,res) =>{
+    app.get("/destination", async (req, res) => {
       const result = await destinationCollection.find().toArray();
-      res.json(result)
-    })
- 
-    app.post("/destination" , async (req ,res) => {
+      res.json(result);
+    });
+
+    app.post("/destination", async (req, res) => {
       const destinationData = req.body;
 
       console.log(destinationData);
@@ -47,42 +42,62 @@ async function run() {
       const result = await destinationCollection.insertOne(destinationData);
 
       res.json(result);
-    })
-    app.get("/destination/:id", async (req ,res) => {
-      const {id} =req.params;
-      const result = await destinationCollection.findOne({_id : new ObjectId(id)});
-      res.json(result)
-    })
-
-
-    app.patch("/destination/:id" , async (req ,res ) => {
-      const {id } =req.params
-      const updateData = req.body
-
-      const result = await destinationCollection.updateOne(
-        {_id : new ObjectId(id)},
-        {$set: updateData}
-      )
-      res.json(result)
-
+    });
+    app.get("/destination/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await destinationCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      res.json(result);
     });
 
+    app.patch("/destination/:id", async (req, res) => {
+      const { id } = req.params;
+      const updateData = req.body;
 
-    app.delete("/destination/:id" , async (req ,res ) => {
-      const {id} =req.params
-       
-      const result = await destinationCollection.deleteOne(
-        {_id: new ObjectId(id)})
-        res.json(result)
+      const result = await destinationCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateData },
+      );
+      res.json(result);
+    });
+
+    app.delete("/destination/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const result = await destinationCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.json(result);
+    });
+
+    app.get('/booking/:userId' , async (req ,res) => {
+      const { userId } =req.params;
+      const result  = await bookingCollection.find({userId }).toArray();
+      res.json(result)
+
     })
- 
+
+    app.post("/booking" , async (req ,res ) => {
+      const bookingData = req.body;
+      const result = await bookingCollection.insertOne(bookingData);
+      
+      res.json(result)
+    });
+
+    app.delete('/booking/:bookingId' , async (req ,res) => {
+      const {bookingId} = req.params;
+      const result = await bookingCollection.deleteOne({_id : new ObjectId(bookingId)})
+
+      res.json(result) 
+    })
 
 
 
-
-
-
-  } finally{
+   
+    await client.db("admin").command({ ping: 1 });
+    console.log(" Connected ");
+  } finally {
     // await client.close();
   }
 }
